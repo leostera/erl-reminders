@@ -5,12 +5,16 @@
                 name="",
                 delay=0}).
 
-loop(S = #state{server=Server, delay=Delay}) ->
+loop(S = #state{server=Server, delay=[T|Next]}) ->
   receive
     {Server, Ref, cancel} ->
       Server ! {Ref, ok}
-  after Delay*1000 ->
-    Server ! {done, S#state.name}
+  after T*1000 ->
+          if Next =:= [] ->
+               Server ! {done, S#state.name};
+             Next =/= [] ->
+               loop(S#state{delay=Next})
+          end
   end.
 
 %% Erlang is limited to about 49 days (49*24*60*60*1000) of wait
