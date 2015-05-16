@@ -34,6 +34,15 @@ subscribe(Pid) ->
       {error, timeout}
   end.
 
+add_event(Name, Description, TimeOut) ->
+  Ref = make_ref(),
+  ?MODULE ! {self(), Ref, {add, Name, Description, Timeout}},
+  receive
+    {Ref, Msg} -> Msg
+  after 5000
+    {error, timeout}
+  end.
+
 init() ->
   loop(#state{events=orddict:new(),
               clients=orddict:new()}).
