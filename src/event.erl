@@ -29,6 +29,19 @@ loop(S = #state{server=Server, delay=[T|Next]}) ->
           end
   end.
 
+cancel(Pid) ->
+  %% Sets up a monitor beforehand to see if the process is alive
+  %% and there
+  Ref = erlang:monitor(process, Pid),
+  Pid ! {self(),Ref, cancel},
+  receive
+    {Ref, ok} ->
+      erlang:demonitor(Ref, [flush]),
+      ok;
+    {'DOWN', Ref, process, Pid, _Reason} ->
+      ok
+  end.
+
 %% Erlang is limited to about 49 days (49*24*60*60*1000) of wait
 %% in an after statement, so we need to split any time into 49 days
 %% parts!
