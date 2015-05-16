@@ -9,6 +9,8 @@
                 pid,
                 timeout={{1970,1,1},{0,0,0}}}).
 
+%% Public API 
+
 start() ->
   register(?MODULE, Pid=spawn(?MODULE, init, [])),
   Pid.
@@ -19,6 +21,18 @@ start_link() ->
 
 terminate() ->
   ?MODULE ! shutdown.
+
+subscribe(Pid) ->
+  Ref = erlang:monitor(process, whereis(?MODULE)),
+  ?MODULE ! {self(), Ref, {subscribe, Pid}},
+  receive
+    {Ref, ok} ->
+      {ok, Ref};
+    {'DOWN', Ref, process, _Pid, Reason} ->
+      {error, Reason}
+  after 5000 ->
+      {error, timeout}
+  end.
 
 init() ->
   loop(#state{events=orddict:new(),
