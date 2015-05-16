@@ -5,6 +5,18 @@
                 name="",
                 delay=0}).
 
+start(EventName, Delay) ->
+  spawn(?MODULE, init, [self(), EventName, Delay]).
+
+start_link(EventName, Delay) ->
+  spawn_link(?MODULE, init, [self(), EventName, Delay]).
+
+%% handle initialization of things
+init(Server, EventName, Delay) ->
+  loop(#state{server=Server,
+              name=EventName,
+              delay=normalize(Delay)}).
+
 loop(S = #state{server=Server, delay=[T|Next]}) ->
   receive
     {Server, Ref, cancel} ->
