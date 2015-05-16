@@ -73,7 +73,7 @@ loop(S=#state{}) ->
     {Pid, MsgRef, {add, Name, Description, TimeOut}} ->
       case valid_datetime(TimeOut) of
         true ->
-          EventPid = event:start_link(Name, TimeOut),
+          EventPid = reminder_event:start_link(Name, TimeOut),
           NewEvents = orddict:store(Name,
                                     #event{name=Name,
                                            description=Description,
@@ -89,7 +89,7 @@ loop(S=#state{}) ->
     {Pid, MsgRef, {cancel, Name}} ->
       Events = case orddict:find(Name, S#state.events) of
                  {ok, E} ->
-                   event:cancel(E#event.pid),
+                   reminder_event:cancel(E#event.pid),
                    orddict:erase(Name, S#state.events);
                  error ->
                    S#state.events
