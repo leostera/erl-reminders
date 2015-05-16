@@ -52,6 +52,13 @@ cancel(Name) ->
     {error, timeout}
   end.
 
+listen(Delay) ->
+  receive
+    M = {done, _Name, _Description} -> [M | listen(0)]
+  after Delay*1000 ->
+    []
+  end.
+
 init() ->
   loop(#state{events=orddict:new(),
               clients=orddict:new()}).
