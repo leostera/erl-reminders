@@ -9,11 +9,22 @@
                 pid,
                 timeout={{1970,1,1},{0,0,0}}}).
 
+start() ->
+  register(?MODULE, Pid=spawn(?MODULE, init, [])),
+  Pid.
+
+start_link() ->
+  register(?MODULE, Pid=spawn_link(?MODULE, init, [])),
+  Pid.
+
+terminate() ->
+  ?MODULE ! shutdown.
+
 init() ->
   loop(#state{events=orddict:new(),
               clients=orddict:new()}).
 
-loop(S= #state{events=Events, clients=Clients}) ->
+loop(S=#state{}) ->
   receive
     {Pid, MsgRef, {subscribe, Client}} ->
       Ref = erlang:monitor(process, Client),
