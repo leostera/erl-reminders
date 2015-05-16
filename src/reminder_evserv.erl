@@ -37,7 +37,15 @@ loop(S= #state{events=Events, clients=Clients}) ->
           loop(S)
       end;
     {Pid, MsgRef, {cancel, Name}} ->
-      ;
+      Events = case orddict:find(Name, S#state.events) of
+                 {ok, E} ->
+                   event:cancel(E#event.pid),
+                   orddict:erase(Name, S#state.events);
+                 error ->
+                   S#state.events
+               end,
+      Pid ! {MsgRef, ok},
+      loop(S#state{events=Events});
     shutdown ->
       ;
     {'DOWN', Ref, process, _Pid, _Reason} ->
