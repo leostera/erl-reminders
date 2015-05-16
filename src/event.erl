@@ -36,7 +36,7 @@ cancel(Pid) ->
   %% Sets up a monitor beforehand to see if the process is alive
   %% and there
   Ref = erlang:monitor(process, Pid),
-  Pid ! {self(),Ref, cancel},
+  Pid ! {self(), Ref, cancel},
   receive
     {Ref, ok} ->
       erlang:demonitor(Ref, [flush]),
