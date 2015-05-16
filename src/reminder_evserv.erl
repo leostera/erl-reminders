@@ -46,6 +46,15 @@ loop(S= #state{events=Events, clients=Clients}) ->
                end,
       Pid ! {MsgRef, ok},
       loop(S#state{events=Events});
+    {done, Name} ->
+      case orddict:find(Name, S#state.events) of
+        {ok, E} ->
+          send_to_clients({done, E#event.name, E#event.description}, S#state.clients),
+          NewEvents = orddict:erase(Name, S#state.events),
+          loop(S#state{events=NewEvents});
+        error ->
+          loop(S)
+      end;
     shutdown ->
       ;
     {'DOWN', Ref, process, _Pid, _Reason} ->
@@ -57,6 +66,10 @@ loop(S= #state{events=Events, clients=Clients}) ->
       loop(State)
   end.
 
+%% Sends a message to a dictionary of clients
+send_to_clients(Msg, ClientDict) ->
+  orddict:map( fun(_Ref, Pid) -> Pid ! Msg end, ClientDict).
+  
 
 %% private date and time validation functions
 
