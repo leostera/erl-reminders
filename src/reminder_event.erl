@@ -42,12 +42,16 @@ cancel(Pid) ->
   %% Sets up a monitor beforehand to see if the process is alive
   %% and there
   Ref = erlang:monitor(process, Pid),
+  io:format("Woot! Created monitor~n"),
   Pid ! {self(), Ref, cancel},
+  io:format("Woot! Sent message to the process~n"),
   receive
     {Ref, ok} ->
+      io:format("Woot! Got message back!~n"),
       erlang:demonitor(Ref, [flush]),
       ok;
     {'DOWN', Ref, process, Pid, _Reason} ->
+      io:format("Woot! Process was down!~n"),
       ok
   end.
 
