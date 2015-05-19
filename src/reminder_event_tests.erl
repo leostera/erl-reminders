@@ -4,16 +4,17 @@
 
 %% macro because setup is the same across all tests
 -define(setup(F), {setup, fun start/0, fun stop/1, F}).
+-define(test(C, F), {C, ?setup(F)}).
 
 %%%
 %%% TESTS DESCRIPTIONS
 %%%
 
 event_test_() ->
-  [{"Creating an event returns a living Pid",
-    ?setup(fun create_event/1)},
-   {"Cancelling an event kills the Pid",
-    ?setup(fun cancel_event/1)}].
+  [
+   ?test("Creating an event returns a living Pid", fun create_event/1),
+   ?test("Cancelling an event kills the Pid", fun cancel_event/1)
+  ].
 
 %%%
 %%% SETUP FUNCTIONS
