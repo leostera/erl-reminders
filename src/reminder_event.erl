@@ -6,17 +6,17 @@
                 delay=0,
                 created=0}).
 
-start(EventName, Delay) ->
-  spawn(?MODULE, init, [self(), EventName, Delay]).
+start(EventName, Date) ->
+  spawn(?MODULE, init, [self(), EventName, Date]).
 
-start_link(EventName, Delay) ->
-  spawn_link(?MODULE, init, [self(), EventName, Delay]).
+start_link(EventName, Date) ->
+  spawn_link(?MODULE, init, [self(), EventName, Date]).
 
 %% handle initialization of things
-init(Server, EventName, Delay) ->
+init(Server, EventName, Date) ->
   loop(#state{server=Server,
               name=EventName,
-              delay=date_to_secs(Delay),
+              delay=date_to_secs(Date),
               created=calendar:datetime_to_gregorian_seconds(calendar:local_time())}).
 
 loop(S = #state{server=Server, delay=[T|Next]=Delay, created=Created}) ->
