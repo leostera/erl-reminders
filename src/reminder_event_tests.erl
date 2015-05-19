@@ -16,6 +16,13 @@ create_event_test_() ->
     fun stop/1,
     fun create_event/1}}.
 
+cancel_event_test_() ->
+  {"Cancelling an event kills the Pid",
+   {setup,
+    fun start/0,
+    fun stop/1,
+    fun cancel_event/1}}.
+
 %%%
 %%% SETUP FUNCTIONS
 %%%
@@ -25,7 +32,10 @@ start() ->
   Pid.
 
 stop(Pid) -> 
-  reminder_event:cancel(Pid).
+  case erlang:is_process_alive(Pid) of
+    true -> reminder_event:cancel(Pid);
+    false -> ok
+  end.
 
 %%%
 %%% ACTUAL TESTS
@@ -34,6 +44,9 @@ stop(Pid) ->
 create_event(Pid) ->
   [?_assert(erlang:is_process_alive(Pid))].
 
+cancel_event(Pid) ->
+  [?assertEqual(ok, reminder_event:cancel(Pid)),
+   ?assertNot(erlang:is_process_alive(Pid))].
 
 %%%
 %%% HELPER FUNCTIONS
