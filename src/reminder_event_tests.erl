@@ -12,8 +12,9 @@
 
 event_test_() ->
   [
-   ?test("Creating an event returns a living Pid", fun create_event/1),
-   ?test("Cancelling an event kills the Pid", fun cancel_event/1)
+   ?test("Can create an event", fun create_event/1),
+   ?test("Can cancel an event", fun cancel_event/1),
+   ?test("Can get the time left for an event as days and time", fun time_left/1)
   ].
 
 %%%
@@ -38,8 +39,12 @@ create_event(Pid) ->
   [?_assert(erlang:is_process_alive(Pid))].
 
 cancel_event(Pid) ->
-  [?_assertEqual(ok, reminder_event:cancel(Pid)),
-   ?_assertNot(erlang:is_process_alive(Pid))].
+  ok = reminder_event:cancel(Pid),
+  [?_assertNot(erlang:is_process_alive(Pid))].
+
+time_left(Pid) ->
+  {ok, Res} = reminder_event:time_left(Pid),
+  [?_assertMatch({_D,{_H,_M,_S}}, Res)].
 
 %%%
 %%% HELPER FUNCTIONS
