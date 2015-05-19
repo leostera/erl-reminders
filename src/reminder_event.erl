@@ -3,7 +3,8 @@
 
 -record(state, {server,
                 name="",
-                delay=0}).
+                delay=0,
+                created=0}).
 
 start(EventName, Delay) ->
   spawn(?MODULE, init, [self(), EventName, Delay]).
@@ -15,13 +16,17 @@ start_link(EventName, Delay) ->
 init(Server, EventName, Delay) ->
   loop(#state{server=Server,
               name=EventName,
-              delay=date_to_secs(Delay)}).
+              delay=date_to_secs(Delay),
+              created=calendar:datetime_to_gregorian_seconds(calendar:local_time())}).
 
-loop(S = #state{server=Server, delay=[T|Next]}) ->
+loop(S = #state{server=Server, delay=[T|Next]=Delay, created=Created}) ->
   receive
     {Server, Ref, time_left} ->
-      TimeLeft = lists:foldl( fun(X,Sum) -> X+Sum end, 0, Next),
-      Server ! {TimeLeft, Ref, ok};
+      TimeOut = lists:foldl( fun(X,Sum) -> X+Sum end, 0, Delay )+Created,
+      TimeNow = calendar:datetime_to_gregorian_seconds(calendar:local_time()),
+      TimeLeft = TimeOut - TimeNow,
+      Server ! {TimeLeft, Ref, ok},
+      loop(S);
     {Server, Ref, cancel} ->
       Server ! {Ref, ok}
   after T*1000 ->
@@ -50,7 +55,7 @@ time_left(Pid) ->
   Pid ! {self(), Ref, time_left},
   receive
     {Time, Ref, ok} -> 
-      erlang:demonitor(Ref, [flush]),
+      erlang:demonitor(Ref),
       {ok, Time};
     {'DOWN', Ref, process, Pid, _Reason} -> 
       ok
