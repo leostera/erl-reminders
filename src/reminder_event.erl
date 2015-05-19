@@ -22,9 +22,10 @@ init(Server, EventName, Delay) ->
 loop(S = #state{server=Server, delay=[T|Next]=Delay, created=Created}) ->
   receive
     {Server, Ref, time_left} ->
-      TimeOut = lists:foldl( fun(X,Sum) -> X+Sum end, 0, Delay )+Created,
+      TimeOut = lists:foldl( fun(X,Sum) -> X+Sum end, 0, Delay ),
       TimeNow = calendar:datetime_to_gregorian_seconds(calendar:local_time()),
-      TimeLeft = TimeOut - TimeNow,
+      SecsLeft = (Created + TimeOut) - TimeNow,
+      TimeLeft = calendar:seconds_to_daystime(SecsLeft),
       Server ! {TimeLeft, Ref, ok},
       loop(S);
     {Server, Ref, cancel} ->
